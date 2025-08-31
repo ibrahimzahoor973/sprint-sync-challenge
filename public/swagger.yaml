@@ -1,0 +1,573 @@
+openapi: 3.0.0
+info:
+  title: SprintSync API
+  version: 1.0.0
+  description: API documentation for SprintSync endpoints
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: System
+    description: System or Utility Endpoints
+  - name: Auth
+    description: Authentication Endpoints
+  - name: Users
+    description: User Management Endpoints
+  - name: Tasks
+    description: Task Management Endpoints
+  - name: AI
+    description: AI-powered suggestions and productivity endpoints
+paths:
+  /api/health:
+    get:
+      tags:
+        - System
+      summary: Health check for system and database
+      description: Returns system health, uptime, database connectivity, performance, error summary, environment, and version.
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthErrorResponse'
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid email or password
+        '500':
+          description: Internal server error
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input or user already exists
+        '500':
+          description: Internal server error
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout user
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '500':
+          description: Internal server error
+  /api/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current authenticated user
+      responses:
+        '200':
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Not authenticated or invalid token
+        '500':
+          description: Internal server error
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Get all users (admin only)
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID (admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /api/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get all tasks for current user (or all if admin)
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [TODO, IN_PROGRESS, DONE]
+        - in: query
+          name: userId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+    post:
+      tags:
+        - Tasks
+      summary: Create new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+  /api/tasks/{id}:
+    get:
+      tags:
+        - Tasks
+      summary: Get a specific task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Task not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Tasks
+      summary: Update a specific task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Task not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Tasks
+      summary: Delete a specific task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTaskResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Task not found
+        '500':
+          description: Internal server error
+  /api/tasks/status/{id}:
+    patch:
+      tags:
+        - Tasks
+      summary: Update task status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskStatusRequest'
+      responses:
+        '200':
+          description: Task status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Task not found
+        '500':
+          description: Internal server error
+  /api/ai/suggest:
+    post:
+      tags:
+        - AI
+      summary: Get AI-powered suggestions for task description or daily plan
+      description: |
+        Returns an AI-generated task description or daily plan for the authenticated user.
+        - `type: description` requires a `title` and returns a detailed description.
+        - `type: daily_plan` returns a personalized daily plan based on user's tasks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AISuggestRequest'
+      responses:
+        '200':
+          description: AI suggestion response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AIDescriptionResponse'
+                  - $ref: '#/components/schemas/AIDailyPlanResponse'
+        '400':
+          description: Invalid input or missing title for description
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          example: 12345
+        database:
+          type: string
+          example: connected
+        latency:
+          type: string
+          example: "15ms"
+        performance:
+          type: object
+        errors:
+          type: object
+        environment:
+          type: string
+          example: development
+        version:
+          type: string
+          example: "1.0.0"
+    HealthErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: unhealthy
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string
+          example: "Database connection failed"
+        latency:
+          type: string
+          example: "15ms"
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        message:
+          type: string
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        tasksCount:
+          type: integer
+          description: Number of tasks assigned to the user
+    CreateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        totalMinutes:
+          type: integer
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [TODO, IN_PROGRESS, DONE]
+        totalMinutes:
+          type: integer
+    UpdateTaskStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [TODO, IN_PROGRESS, DONE]
+    TaskResponse:
+      type: object
+      properties:
+        task:
+          $ref: '#/components/schemas/Task'
+    DeleteTaskResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [TODO, IN_PROGRESS, DONE]
+        totalMinutes:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    AISuggestRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [description, daily_plan]
+        title:
+          type: string
+          description: Required if type is "description"
+    AIDescriptionResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: description
+        title:
+          type: string
+        suggestion:
+          type: string
+        source:
+          type: string
+          example: openai
+    AIDailyPlanResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: daily_plan
+        plan:
+          type: object
+          properties:
+            summary:
+              type: string
+            recommendations:
+              type: array
+              items:
+                type: string
+            priorityTasks:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  reason:
+                    type: string
+            estimatedWorkTime:
+              type: string
+            motivationalTip:
+              type: string
+        taskCount:
+          type: integer
+        source:
+          type: string
+          example: openai
