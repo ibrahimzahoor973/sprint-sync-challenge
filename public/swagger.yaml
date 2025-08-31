@@ -6,7 +6,8 @@ info:
 servers:
   - url: http://localhost:3000
     description: Local development
-
+  - url: https://sprintsync-psi.vercel.app
+    description: Production (Vercel)
 tags:
   - name: System
     description: System or Utility Endpoints
