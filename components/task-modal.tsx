@@ -115,7 +115,7 @@ export function TaskModal({ isOpen, onClose, onSave, task, mode }: TaskModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "Create New Task" : "Edit Task"}</DialogTitle>
           <DialogDescription>
@@ -134,22 +134,33 @@ export function TaskModal({ isOpen, onClose, onSave, task, mode }: TaskModalProp
 
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="Enter task title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={isLoading}
-              required
-            />
+            {title.length > 60 ? (
+              <Textarea
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={isLoading}
+                rows={2}
+                className="w-full max-h-32 overflow-y-auto"
+              />
+            ) : (
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={isLoading}
+                className="w-full"
+              />
+            )}
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="description">Description</Label>
-              <AISuggestionModal onDescriptionGenerated={handleDescriptionGenerated} />
+              <AISuggestionModal onDescriptionGenerated={handleDescriptionGenerated} callingFrom="task-modal" setTaskTitle={setTitle}/>
             </div>
             <Textarea
+            className="max-h-[300px] overflow-y-auto"
               id="description"
               placeholder="Describe your task in detail..."
               value={description}
@@ -179,7 +190,7 @@ export function TaskModal({ isOpen, onClose, onSave, task, mode }: TaskModalProp
                 <Label htmlFor="time">Time Spent (hours:minutes)</Label>
                 <Input
                   id="time"
-                  type="time"
+                  type="text"
                   value={formatMinutesToHours(totalMinutes)}
                   onChange={(e) => setTotalMinutes(parseHoursToMinutes(e.target.value))}
                   disabled={isLoading}

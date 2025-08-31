@@ -20,15 +20,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Sparkles, Clock, Target, Lightbulb } from "lucide-react"
 
 interface AISuggestionModalProps {
-  onDescriptionGenerated?: (description: string) => void
+  onDescriptionGenerated?: (description: string) => void,
+  createTask?: (taskData: {
+    title: string
+    description?: string
+    status?: "TODO" | "IN_PROGRESS" | "DONE"
+    totalMinutes?: number
+  }, mode?: "create" | "edit") => Promise<void>,
+  setTaskTitle?: (title: string) => void,
+  callingFrom?: string
 }
 
-export function AISuggestionModal({ onDescriptionGenerated }: AISuggestionModalProps) {
+export function AISuggestionModal({ onDescriptionGenerated, createTask, setTaskTitle, callingFrom }: AISuggestionModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-
-  // Description tab state
   const [title, setTitle] = useState("")
   const [generatedDescription, setGeneratedDescription] = useState("")
 
@@ -102,8 +108,20 @@ export function AISuggestionModal({ onDescriptionGenerated }: AISuggestionModalP
   }
 
   const useDescription = () => {
-    if (onDescriptionGenerated && generatedDescription) {
+    if (callingFrom === 'task-modal' && onDescriptionGenerated && generatedDescription) {
       onDescriptionGenerated(generatedDescription)
+      setIsOpen(false)
+      setTitle("")
+      setGeneratedDescription("")
+      setTaskTitle(title.trim())
+    } else if (callingFrom === 'dashboard' && createTask && generatedDescription) {
+      console.log('Creating a new task using AI')
+      createTask({
+        title: title.trim(),
+        description: generatedDescription,
+        status: "TODO",
+        totalMinutes: 0,
+      }, "create")
       setIsOpen(false)
       setTitle("")
       setGeneratedDescription("")
@@ -181,7 +199,7 @@ export function AISuggestionModal({ onDescriptionGenerated }: AISuggestionModalP
                       className="mb-3"
                     />
                     <div className="flex gap-2">
-                      <Button onClick={useDescription} size="sm">
+                      <Button onClick={useDescription} size="sm" disabled={isLoading}>
                         Use This Description
                       </Button>
                       <Button onClick={generateDescription} variant="outline" size="sm" disabled={isLoading}>

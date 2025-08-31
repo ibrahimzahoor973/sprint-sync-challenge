@@ -43,15 +43,24 @@ export default function DashboardPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [users, setUsers] = useState<AppUser[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<string>("")
+  const [stats, setStats] = useState({total: 0, todo: 0, inProgress: 0, done: 0, totalTime: 0})
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    fetchUserAndTasks()
+  fetchUsers()
+  fetchUserAndTasks()
   }, [])
 
   useEffect(() => {
+    if (filteredTasks.length === 0 || !selectedUserId) {
+      getTaskStats(tasks)
+    }
     filterTasks()
-  }, [tasks, activeTab])
+  }, [tasks, activeTab, selectedUserId])
 
   const fetchUserAndTasks = async () => {
     try {
@@ -77,20 +86,47 @@ export default function DashboardPage() {
     }
   }
 
+    const getTaskStats = (tasksList: Task[]) => {
+      const total = tasksList.length;
+      const todo = tasksList.filter((t) => t.status === "TODO").length
+      const inProgress = tasksList.filter((t) => t.status === "IN_PROGRESS").length
+      const done = tasksList.filter((t) => t.status === "DONE").length
+      const totalTime = tasksList.reduce((sum, task) => sum + task.totalMinutes, 0)
+      setStats({total, todo, inProgress, done, totalTime})
+  }
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users")
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.users)
+      }
+    } catch (error) {
+      console.log('User fetch error:', error)
+    }
+  }
+
   const filterTasks = () => {
+    let filtered = tasks
+    if (user?.isAdmin && selectedUserId) {
+      filtered = filtered.filter((task) => task.user.id === selectedUserId)
+      getTaskStats(filtered)
+    }
     switch (activeTab) {
       case "todo":
-        setFilteredTasks(tasks.filter((task) => task.status === "TODO"))
+        filtered = filtered.filter((task) => task.status === "TODO")
         break
       case "in-progress":
-        setFilteredTasks(tasks.filter((task) => task.status === "IN_PROGRESS"))
+        filtered = filtered.filter((task) => task.status === "IN_PROGRESS")
         break
       case "done":
-        setFilteredTasks(tasks.filter((task) => task.status === "DONE"))
+        filtered = filtered.filter((task) => task.status === "DONE")
         break
       default:
-        setFilteredTasks(tasks)
+        break
     }
+    setFilteredTasks(filtered)
   }
 
   const handleLogout = async () => {
@@ -109,19 +145,23 @@ export default function DashboardPage() {
   }
 
   const handleEditTask = (task: Task) => {
+    if (showDeleteModal) return;
     setTaskModalMode("edit")
     setEditingTask(task)
     setIsTaskModalOpen(true)
   }
 
-  const handleSaveTask = async (taskData: {
-    title: string
-    description?: string
-    status?: "TODO" | "IN_PROGRESS" | "DONE"
-    totalMinutes?: number
-  }) => {
+  const handleSaveTask = async (
+    taskData: {
+      title: string
+      description?: string
+      status?: "TODO" | "IN_PROGRESS" | "DONE"
+      totalMinutes?: number
+    },
+    mode: "create" | "edit" = taskModalMode
+  ) => {
     try {
-      if (taskModalMode === "create") {
+      if (mode === "create") {
         const response = await fetch("/api/tasks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -175,8 +215,6 @@ export default function DashboardPage() {
   }
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!confirm("Are you sure you want to delete this task?")) return
-
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "DELETE",
@@ -187,19 +225,13 @@ export default function DashboardPage() {
       }
 
       setTasks((prev) => prev.filter((t) => t.id !== taskId))
+      setShowDeleteModal(false)
+      setDeletingTask(null)
     } catch (error) {
       setError("Failed to delete task")
     }
   }
 
-  const getTaskStats = () => {
-    const todo = tasks.filter((t) => t.status === "TODO").length
-    const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS").length
-    const done = tasks.filter((t) => t.status === "DONE").length
-    const totalTime = tasks.reduce((sum, task) => sum + task.totalMinutes, 0)
-
-    return { todo, inProgress, done, totalTime }
-  }
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
@@ -218,8 +250,6 @@ export default function DashboardPage() {
       </div>
     )
   }
-
-  const stats = getTaskStats()
 
   return (
     <div className="min-h-screen bg-background">
@@ -298,11 +328,23 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Admin Only Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <h2 className="text-2xl font-bold text-foreground text-balance">Your Tasks</h2>
           <div className="flex items-center space-x-3">
-            <AISuggestionModal />
+            {user?.isAdmin && (
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+              >
+                <option value="">All Users</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>{u.email}</option>
+                ))}
+              </select>
+            )}
+            <AISuggestionModal createTask={handleSaveTask} callingFrom="dashboard"/>
             <Button onClick={handleCreateTask}>
               <Plus className="mr-2 h-4 w-4" />
               New Task
@@ -310,10 +352,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Task Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All ({tasks.length})</TabsTrigger>
+            <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
             <TabsTrigger value="todo">To Do ({stats.todo})</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress ({stats.inProgress})</TabsTrigger>
             <TabsTrigger value="done">Done ({stats.done})</TabsTrigger>
@@ -345,13 +386,19 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onStatusChange={handleStatusChange}
-                    onEdit={handleEditTask}
-                    onDelete={handleDeleteTask}
-                  />
+                  <div key={task.id} onClick={() => handleEditTask(task)} className="cursor-pointer">
+                    <TaskCard
+                      task={task}
+                      isAdmin={user?.isAdmin}
+                      onStatusChange={handleStatusChange}
+                      onDelete={handleDeleteTask}
+                      showDeleteModal={showDeleteModal && deletingTask?.id === task.id}
+                      setShowDeleteModal={(show) => {
+                        setShowDeleteModal(show)
+                        setDeletingTask(show ? task : null)
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -359,7 +406,6 @@ export default function DashboardPage() {
         </Tabs>
       </div>
 
-      {/* Task Modal */}
       <TaskModal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
