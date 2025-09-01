@@ -74,19 +74,22 @@ sprintsync/
 2. **Install dependencies**
     ```npm install```
 
-3. **Configure environment variables**
+3. **Generate Prisma Client**
+    ```npx prisma generate```
+
+4. **Configure environment variables**
   Fill in .env:
   DATABASE_URL
   JWT_SECRET
   OPENAI_API_KEY (optional)
 
-4. **Run locally**
+5. **Run locally**
  ```npm run dev```
 
-5. **Run with Docker**
+6. **Run with Docker**
   ```docker compose up --build```
 
-6. **Database migrations**
+7. **Database migrations**
   Prisma migrations run automatically on startup.
 
 ## 📖 API Documentation

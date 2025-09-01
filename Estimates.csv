@@ -1,15 +1,15 @@
 Sub Task,Estimated Hours,Actual Hours
-Project Initialization & Setup (Next.js, repo, config),1.0
-Authentication & Security (JWT, bcrypt),1.2
-Database Schema & Migrations (Prisma + Supabase),1.5
-Core API Development (tasks, users, roles),2.0,
-Validation Layer (Zod integration),0.6
-AI Suggestion Endpoint (OpenAI integration),0.8
-Swagger API Documentation, 0.7
-Frontend Setup & Auth Flows,1.2
-Task Management UI (CRUD, status, priority, time tracking),2.5
-Frontend Finalization (UX polish, modals, role-based UI),1.0
-Containerization (Docker & Compose),1.0
-Cloud Deployment (Vercel + env vars + supabase connection),1.0
-Documentation & Demo (README, Swagger docs, test creds),1.2
-TOTAL,15.7
+Project Initialization & Setup (Next.js, repo, config),1.0,0.7
+Authentication & Security (JWT, bcrypt),1.2,1.5
+Database Schema & Migrations (Prisma + Supabase),1.5, 1.0
+Core API Development (tasks, users, roles),2.0, 2.3
+Validation Layer (Zod integration),0.6, 1.0
+AI Suggestion Endpoint (OpenAI integration),0.8, 1.0
+Swagger API Documentation, 0.7, 1.1
+Frontend Setup & Auth Flows,1.2, 2.5
+Task Management UI (CRUD, status, priority, time tracking),2.5, 2.7
+Frontend Finalization (UX polish, modals, role-based UI),1.0, 1.0
+Containerization (Docker & Compose),1.0, 1.0
+Cloud Deployment (Vercel + env vars + supabase connection),1.0, 0.7
+Documentation & Demo (README, Swagger docs, test creds),1.2, 1.5
+TOTAL,15.7, 18.0

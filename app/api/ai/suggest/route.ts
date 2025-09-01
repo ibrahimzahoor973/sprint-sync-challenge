@@ -9,40 +9,6 @@ const suggestSchema = z.object({
   title: z.string().optional(),
 })
 
-const fallbackDescriptions = {
-  setup:
-    "Initialize the project structure, configure necessary dependencies, and prepare the development environment for optimal workflow.",
-  design:
-    "Create wireframes and mockups, define the user interface components, and establish the visual design system for consistency.",
-  implement:
-    "Write the core functionality, integrate required APIs, and ensure proper error handling and validation throughout the system.",
-  test: "Develop comprehensive test cases, perform unit and integration testing, and validate all features work as expected.",
-  deploy:
-    "Configure production environment, set up CI/CD pipeline, and ensure the application is ready for live deployment.",
-  review:
-    "Conduct thorough code review, check for security vulnerabilities, and optimize performance for better user experience.",
-  fix: "Identify and resolve bugs, address user feedback, and implement necessary improvements to enhance functionality.",
-  optimize:
-    "Analyze performance metrics, refactor inefficient code, and implement caching strategies for better system performance.",
-  document:
-    "Create comprehensive documentation, write user guides, and ensure all code is properly commented for maintainability.",
-  meeting:
-    "Prepare agenda items, gather necessary materials, and coordinate with team members to ensure productive discussion.",
-}
-
-function generateFallbackDescription(title: string): string {
-  const lowerTitle = title.toLowerCase()
-
-  for (const [keyword, description] of Object.entries(fallbackDescriptions)) {
-    if (lowerTitle.includes(keyword)) {
-      return description
-    }
-  }
-
-  return "Break this task into smaller, actionable steps. Define clear success criteria and identify any dependencies or resources needed to complete this work effectively."
-}
-
-// POST /api/ai/suggest - Get AI suggestions
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
@@ -81,13 +47,10 @@ export async function POST(request: NextRequest) {
           temperature: 0.7,
         });
 
-          suggestion = completion.choices[0]?.message?.content || generateFallbackDescription(title)
+          suggestion = completion.choices[0]?.message?.content?.trim() || "No suggestion available"
         } catch (error) {
           console.error("OpenAI API error:", error)
-          suggestion = generateFallbackDescription(title)
         }
-      } else {
-        suggestion = generateFallbackDescription(title)
       }
 
       const latency = Date.now() - startTime
@@ -97,7 +60,7 @@ export async function POST(request: NextRequest) {
         type: "description",
         title,
         suggestion,
-        source: isOpenAIAvailable() ? "openai" : "fallback",
+        source: isOpenAIAvailable() ? "openai" : "none",
       })
     }
 
