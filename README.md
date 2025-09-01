@@ -49,7 +49,7 @@ A modern full-stack task management app for teams, built with **Next.js**, **Pos
 sprintsync/
 ├── app/ # Next.js app routes & pages
 ├── components/ # UI components (TaskCard, Modals, etc.)
-├── lib/ # Utilities (Prisma client, OpenAI integration)
+├── lib/ # Utilities (Prisma client, OpenAI integration, Pinecone Client)
 ├── prisma/ # Prisma schema
 ├── public/ # Static assets
 ├── supabase/ # SQL migrations for Supabase
@@ -97,11 +97,12 @@ sprintsync/
 1. Task management with status, priority & time tracking
 2. Admin & user roles
 3. AI-powered task suggestions (OpenAI)
-4. Zod for request validation
-5. Swagger API docs
-6. Secure authentication (JWT / bcrypt)
-7. Fully containerized with Docker
-8. Production-ready deployment on Vercel
+4. 4. RAG flow for intelligent user assignment (retrieve candidate resumes and use LLM to suggest best users for tasks)
+5. Zod for request validation
+6. Swagger API docs
+7. Secure authentication (JWT / bcrypt)
+8. Fully containerized with Docker
+9. Production-ready deployment on Vercel
 
 ## Why These Choices?
 Next.js → Modern, full-stack, SSR support.
