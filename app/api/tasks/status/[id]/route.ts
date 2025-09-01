@@ -8,7 +8,8 @@ const statusUpdateSchema = z.object({
 })
 
 // PATCH /api/tasks/status/[id] - Update task status
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {
@@ -69,7 +70,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // POST /api/tasks/status/[id] - Cycle task status (TODO → IN_PROGRESS → DONE → TODO)
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {

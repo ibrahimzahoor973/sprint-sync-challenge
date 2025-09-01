@@ -9,7 +9,8 @@ const updateUserSchema = z.object({
 })
 
 // GET /api/users/[id] - Get specific user (admin only)
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {
@@ -56,7 +57,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/users/[id] - Update user (admin only)
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {
@@ -121,7 +123,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/users/[id] - Delete user (admin only)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {

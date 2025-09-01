@@ -157,6 +157,7 @@ export default function DashboardPage() {
       description?: string
       status?: "TODO" | "IN_PROGRESS" | "DONE"
       totalMinutes?: number
+      userId?: string
     },
     mode: "create" | "edit" = taskModalMode
   ) => {
@@ -412,6 +413,8 @@ export default function DashboardPage() {
         onSave={handleSaveTask}
         task={editingTask}
         mode={taskModalMode}
+        isAdmin={user?.isAdmin || false}
+        users={users}
       />
     </div>
   )

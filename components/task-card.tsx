@@ -6,8 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Clock, MoreHorizontal, Edit, Trash2, Play, Pause, CheckCircle } from "lucide-react"
+import { Clock, Trash2, Play, Pause, CheckCircle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Task {
@@ -66,6 +65,7 @@ export function TaskCard({
   setShowDeleteModal,
 }: TaskCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const config = statusConfig[task.status]
   const StatusIcon = config.icon
@@ -80,11 +80,10 @@ export function TaskCard({
   }
 
   const handleDelete = async () => {
-    console.log({
-      taskDeleted: task.title
-    })
+    setIsLoading(true)
     await onDelete(task.id)
     setShowDeleteModal(false)
+    setIsLoading(false)
     toast({
       title: "Task Deleted",
       description: `Task "${task.title}" was deleted successfully.`,
@@ -166,11 +165,15 @@ export function TaskCard({
           </DialogHeader>
           <p>Are you sure you want to delete this task?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {setShowDeleteModal(false)}}>
+            <Button variant="outline" onClick={() => {setShowDeleteModal(false)}} disabled={isLoading}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
+            <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+              {isLoading ? (<>
+              Deleting
+               <Loader2 className="h-4 w-4 animate-spin" /> 
+              </>
+              ): 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -8,10 +8,12 @@ const updateTaskSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).optional(),
   totalMinutes: z.number().min(0).optional(),
+  userId: z.string().optional(),
 })
 
 // GET /api/tasks/[id] - Get specific task
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {
@@ -55,7 +57,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/tasks/[id] - Update task
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {
@@ -112,7 +115,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/tasks/[id] - Delete task
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: any) {
+  const params = await context.params
   const startTime = Date.now()
 
   try {

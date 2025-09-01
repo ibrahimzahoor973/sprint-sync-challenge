@@ -7,6 +7,7 @@ const createTaskSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().optional(),
   totalMinutes: z.number().min(0).default(0),
+  userId: z.string().optional(),
 })
 
 const updateTaskSchema = z.object({
@@ -83,14 +84,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, totalMinutes } = createTaskSchema.parse(body)
+    const { title, description, totalMinutes, userId } = createTaskSchema.parse(body)
 
     const task = await prisma.task.create({
       data: {
         title,
         description,
         totalMinutes,
-        userId: user.id,
+        userId: userId || user.id,
         status: "TODO",
       },
       include: {
