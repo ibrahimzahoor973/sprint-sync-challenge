@@ -340,11 +340,10 @@ paths:
     post:
       tags:
         - AI
-      summary: Get AI-powered suggestions for task description or daily plan
+      summary: Get AI-powered suggestions for task description
       description: |
-        Returns an AI-generated task description or daily plan for the authenticated user.
+        Returns an AI-generated task description for the authenticated user.
         - `type: description` requires a `title` and returns a detailed description.
-        - `type: daily_plan` returns a personalized daily plan based on user's tasks.
       requestBody:
         required: true
         content:
@@ -359,7 +358,6 @@ paths:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/AIDescriptionResponse'
-                  - $ref: '#/components/schemas/AIDailyPlanResponse'
         '400':
           description: Invalid input or missing title for description
         '401':
@@ -562,7 +560,7 @@ components:
       properties:
         type:
           type: string
-          enum: [description, daily_plan]
+          enum: [description]
         title:
           type: string
           description: Required if type is "description"
@@ -576,41 +574,6 @@ components:
           type: string
         suggestion:
           type: string
-        source:
-          type: string
-          example: openai
-    AIDailyPlanResponse:
-      type: object
-      properties:
-        type:
-          type: string
-          example: daily_plan
-        plan:
-          type: object
-          properties:
-            summary:
-              type: string
-            recommendations:
-              type: array
-              items:
-                type: string
-            priorityTasks:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  title:
-                    type: string
-                  reason:
-                    type: string
-            estimatedWorkTime:
-              type: string
-            motivationalTip:
-              type: string
-        taskCount:
-          type: integer
         source:
           type: string
           example: openai
