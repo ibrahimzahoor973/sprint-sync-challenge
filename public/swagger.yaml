@@ -366,6 +366,48 @@ paths:
           description: Unauthorized
         '500':
           description: Internal server error
+  /api/ai/assign-user:
+    post:
+      tags:
+        - AI
+      summary: Get AI-powered user assignment suggestions for a task
+      description: |
+        Returns a list of up to 3 most suitable user emails for a given task description using RAG (Retrieval Augmented Generation) flow.
+        The system retrieves candidate resumes and uses an LLM to select the best matches.
+        - Provide a task description in the request body.
+        - Response will be an array of user emails.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Task description to match users against
+      responses:
+        '200':
+          description: AI user assignment suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestion:
+                    type: array
+                    items:
+                      type: string
+                    description: List of suggested user emails
+                  source:
+                    type: string
+                    description: Source of suggestion (e.g., pinecone+llm)
+        '400':
+          description: Invalid input or missing description
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
 components:
   schemas:
     HealthResponse:
@@ -572,3 +614,20 @@ components:
         source:
           type: string
           example: openai
+    AIUserAssignmentRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Task description to match users against
+    AIUserAssignmentResponse:
+      type: object
+      properties:
+        suggestion:
+          type: array
+          items:
+            type: string
+          description: List of suggested user emails
+        source:
+          type: string
+          description: Source of suggestion (e.g., pinecone+llm)
